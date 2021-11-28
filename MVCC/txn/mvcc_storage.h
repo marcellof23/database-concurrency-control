@@ -40,6 +40,7 @@ public:
   // Unlock the version_list of key
   virtual void Unlock(Key key);
 
+  //virtual int getMaxVersionId(Key key, int txn_unique_id);
   // Check whether apply or abort the write
   virtual bool CheckWrite(Key key, int txn_unique_id);
 

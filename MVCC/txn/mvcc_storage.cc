@@ -135,38 +135,36 @@ void MVCCStorage::Write(Key key, Value value, int txn_unique_id)
   // into the version_lists. Note that InitStorage() also calls this method to init storage.
   // Note that you don't have to call Lock(key) in this method, just
   // call Lock(key) before you call this method and call Unlock(key) afterward.
-  if (CheckWrite(key, txn_unique_id))
+
+  Version *new_update_ver = new Version();
+  new_update_ver->value_ = value;
+  new_update_ver->version_id_ = txn_unique_id;
+  new_update_ver->max_read_id_ = txn_unique_id;
+
+  if (!mvcc_data_.count(key))
   {
-    Version *new_update_ver = new Version();
-    new_update_ver->value_ = value;
-    new_update_ver->version_id_ = txn_unique_id;
-    new_update_ver->max_read_id_ = txn_unique_id;
-
-    if (!mvcc_data_.count(key))
-    {
-      deque<Version *> *new_ver = new deque<Version *>();
-      mvcc_data_[key] = new_ver;
-    }
-    else
-    {
-      int max_ver_id = 0;
-      for (auto el : *mvcc_data_[key])
-      {
-        if (el->version_id_ <= txn_unique_id && el->version_id_ > max_ver_id)
-        {
-          max_ver_id = el->version_id_;
-        }
-      }
-      for (auto &el : *mvcc_data_[key])
-      {
-        if (max_ver_id == txn_unique_id && max_ver_id == el->version_id_)
-        {
-          el->value_ = value;
-          return;
-        }
-      }
-    }
-
-    mvcc_data_[key]->push_back(new_update_ver);
+    deque<Version *> *new_ver = new deque<Version *>();
+    mvcc_data_[key] = new_ver;
   }
+  else
+  {
+    int max_ver_id = 0;
+    for (auto el : *mvcc_data_[key])
+    {
+      if (el->version_id_ <= txn_unique_id && el->version_id_ > max_ver_id)
+      {
+        max_ver_id = el->version_id_;
+      }
+    }
+    for (auto &el : *mvcc_data_[key])
+    {
+      if (max_ver_id == txn_unique_id && max_ver_id == el->version_id_)
+      {
+        el->value_ = value;
+        return;
+      }
+    }
+  }
+
+  mvcc_data_[key]->push_back(new_update_ver);
 }

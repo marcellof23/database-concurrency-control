@@ -10,18 +10,19 @@
 
 using std::set;
 
-TEST(LockManagerA_SimpleLocking) {
-  deque<Txn*> ready_txns;
+TEST(LockManagerA_SimpleLocking)
+{
+  deque<Txn *> ready_txns;
   LockManagerA lm(&ready_txns);
-  vector<Txn*> owners;
+  vector<Txn *> owners;
 
-  Txn* t1 = reinterpret_cast<Txn*>(1);
-  Txn* t2 = reinterpret_cast<Txn*>(2);
-  Txn* t3 = reinterpret_cast<Txn*>(3);
+  Txn *t1 = reinterpret_cast<Txn *>(1);
+  Txn *t2 = reinterpret_cast<Txn *>(2);
+  Txn *t3 = reinterpret_cast<Txn *>(3);
 
   // Txn 1 acquires read lock.
   lm.ReadLock(t1, 101);
-  ready_txns.push_back(t1);   // Txn 1 is ready.
+  ready_txns.push_back(t1); // Txn 1 is ready.
   EXPECT_EQ(EXCLUSIVE, lm.Status(101, &owners));
   EXPECT_EQ(1, owners.size());
   EXPECT_EQ(t1, owners[0]);
@@ -61,23 +62,24 @@ TEST(LockManagerA_SimpleLocking) {
   END;
 }
 
-TEST(LockManagerA_LocksReleasedOutOfOrder) {
-  deque<Txn*> ready_txns;
+TEST(LockManagerA_LocksReleasedOutOfOrder)
+{
+  deque<Txn *> ready_txns;
   LockManagerA lm(&ready_txns);
-  vector<Txn*> owners;
+  vector<Txn *> owners;
 
-  Txn* t1 = reinterpret_cast<Txn*>(1);
-  Txn* t2 = reinterpret_cast<Txn*>(2);
-  Txn* t3 = reinterpret_cast<Txn*>(3);
-  Txn* t4 = reinterpret_cast<Txn*>(4);
+  Txn *t1 = reinterpret_cast<Txn *>(1);
+  Txn *t2 = reinterpret_cast<Txn *>(2);
+  Txn *t3 = reinterpret_cast<Txn *>(3);
+  Txn *t4 = reinterpret_cast<Txn *>(4);
 
-  lm.ReadLock(t1, 101);   // Txn 1 acquires read lock.
-  ready_txns.push_back(t1);  // Txn 1 is ready.
-  lm.WriteLock(t2, 101);  // Txn 2 requests write lock. Not granted.
-  lm.ReadLock(t3, 101);   // Txn 3 requests read lock. Not granted.
-  lm.ReadLock(t4, 101);   // Txn 4 requests read lock. Not granted.
+  lm.ReadLock(t1, 101);     // Txn 1 acquires read lock.
+  ready_txns.push_back(t1); // Txn 1 is ready.
+  lm.WriteLock(t2, 101);    // Txn 2 requests write lock. Not granted.
+  lm.ReadLock(t3, 101);     // Txn 3 requests read lock. Not granted.
+  lm.ReadLock(t4, 101);     // Txn 4 requests read lock. Not granted.
 
-  lm.Release(t2, 101);    // Txn 2 cancels write lock request.
+  lm.Release(t2, 101); // Txn 2 cancels write lock request.
 
   // Txn 1 should now have a read lock and Txns 3 and 4 should be next in line.
   EXPECT_EQ(EXCLUSIVE, lm.Status(101, &owners));
@@ -103,19 +105,19 @@ TEST(LockManagerA_LocksReleasedOutOfOrder) {
   END;
 }
 
-
-TEST(LockManagerB_SimpleLocking) {
-  deque<Txn*> ready_txns;
+TEST(LockManagerB_SimpleLocking)
+{
+  deque<Txn *> ready_txns;
   LockManagerB lm(&ready_txns);
-  vector<Txn*> owners;
+  vector<Txn *> owners;
 
-  Txn* t1 = reinterpret_cast<Txn*>(1);
-  Txn* t2 = reinterpret_cast<Txn*>(2);
-  Txn* t3 = reinterpret_cast<Txn*>(3);
+  Txn *t1 = reinterpret_cast<Txn *>(1);
+  Txn *t2 = reinterpret_cast<Txn *>(2);
+  Txn *t3 = reinterpret_cast<Txn *>(3);
 
   // Txn 1 acquires read lock.
   lm.ReadLock(t1, 101);
-  ready_txns.push_back(t1);   // Txn 1 is ready.
+  ready_txns.push_back(t1); // Txn 1 is ready.
   EXPECT_EQ(SHARED, lm.Status(101, &owners));
   EXPECT_EQ(1, owners.size());
   EXPECT_EQ(t1, owners[0]);
@@ -155,23 +157,24 @@ TEST(LockManagerB_SimpleLocking) {
   END;
 }
 
-TEST(LockManagerB_LocksReleasedOutOfOrder) {
-  deque<Txn*> ready_txns;
+TEST(LockManagerB_LocksReleasedOutOfOrder)
+{
+  deque<Txn *> ready_txns;
   LockManagerB lm(&ready_txns);
-  vector<Txn*> owners;
+  vector<Txn *> owners;
 
-  Txn* t1 = reinterpret_cast<Txn*>(1);
-  Txn* t2 = reinterpret_cast<Txn*>(2);
-  Txn* t3 = reinterpret_cast<Txn*>(3);
-  Txn* t4 = reinterpret_cast<Txn*>(4);
+  Txn *t1 = reinterpret_cast<Txn *>(1);
+  Txn *t2 = reinterpret_cast<Txn *>(2);
+  Txn *t3 = reinterpret_cast<Txn *>(3);
+  Txn *t4 = reinterpret_cast<Txn *>(4);
 
-  lm.ReadLock(t1, 101);   // Txn 1 acquires read lock.
-  ready_txns.push_back(t1);  // Txn 1 is ready.
-  lm.WriteLock(t2, 101);  // Txn 2 requests write lock. Not granted.
-  lm.ReadLock(t3, 101);   // Txn 3 requests read lock. Not granted.
-  lm.ReadLock(t4, 101);   // Txn 4 requests read lock. Not granted.
+  lm.ReadLock(t1, 101);     // Txn 1 acquires read lock.
+  ready_txns.push_back(t1); // Txn 1 is ready.
+  lm.WriteLock(t2, 101);    // Txn 2 requests write lock. Not granted.
+  lm.ReadLock(t3, 101);     // Txn 3 requests read lock. Not granted.
+  lm.ReadLock(t4, 101);     // Txn 4 requests read lock. Not granted.
 
-  lm.Release(t2, 101);    // Txn 2 cancels write lock request.
+  lm.Release(t2, 101); // Txn 2 cancels write lock request.
 
   // Txns 1, 3 and 4 should now have a shared lock.
   EXPECT_EQ(SHARED, lm.Status(101, &owners));
@@ -187,10 +190,10 @@ TEST(LockManagerB_LocksReleasedOutOfOrder) {
   END;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
   LockManagerA_SimpleLocking();
   LockManagerA_LocksReleasedOutOfOrder();
   LockManagerB_SimpleLocking();
   LockManagerB_LocksReleasedOutOfOrder();
 }
-
