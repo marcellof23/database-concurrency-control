@@ -1,0 +1,20 @@
+{
+    "name": "occ",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "concurrently \"tsc --watch\" \"nodemon -q dist/index.js\"",
+        "start": "tsc && node dist/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/assert-plus": "^1.0.4",
+        "typescript": "^4.5.2"
+    },
+    "dependencies": {
+        "assert-plus": "^1.0.0"
+    }
+}
