@@ -6,8 +6,10 @@ import sys
 lockTableItems = []
 transactionTableItems = []
 waitingTransactionItems = []
+localTimeStamp = 1
 
 # Transaction States
+X = "Aborted"
 A = "Available"
 W = "Waiting"
 C = "Committed"
@@ -23,9 +25,10 @@ class lockTable:
 
 
 class transactionTable:
-    def __init__(self, transactionID, transactionState):
+    def __init__(self, transactionID, transactionState, timeStamp):
         self.transactionID = transactionID
         self.transactionState = transactionState
+        self.timeStamp = timeStamp
         self.lockedItems = []
         self.blockedOperation = []
 
@@ -72,9 +75,11 @@ def findTransaction(transNumber: int) -> transactionTable:
 # Operations
 
 def operateBegin(op: str):
+    global localTimeStamp
     transID = getTransNumber(op)
     print(f"[B{transID}]\t Beginning Transaction Number {transID}")
-    transactionTableItems.append(transactionTable(transID, A))
+    transactionTableItems.append(transactionTable(transID, A, localTimeStamp))
+    localTimeStamp += 1
     return
 
 
@@ -132,6 +137,9 @@ def operateCommit(op: str):
 def checkWaiting(op: str):
     item, transNumber = getOperationData(op, ITEMS)
     for trans in transactionTableItems:
+        if trans.transactionID == transNumber and trans.transactionState == X:
+            trans.addBlockedOperation(op)
+            return True
         if trans.transactionID == transNumber and trans.transactionState == W:
             trans.addBlockedOperation(op)
             return True
@@ -155,13 +163,25 @@ def checkOperation(op: str):
 
 
 def handleWait(req: transactionTable, hold: transactionTable, op: str):
-    print(
-        f"[!]\t Changing Transaction {req.transactionID} state to 'Waiting'")
-    req.changeTransactionState(W)
-    if not op in req.blockedOperation:
-        req.addBlockedOperation(op)
-    if not req in waitingTransactionItems:
-        waitingTransactionItems.append(req)
+    if req.timeStamp < hold.timeStamp:
+        print(f"[A]\t Aborting Transaction {hold.transactionID}")
+        hold.changeTransactionState(X)
+        req.changeTransactionState(W)
+        if not op in req.blockedOperation:
+            req.addBlockedOperation(op)
+        if not req in waitingTransactionItems:
+            waitingTransactionItems.append(req)
+        if hold in waitingTransactionItems:
+            waitingTransactionItems.remove(hold)
+        handleUnlock(hold.transactionID)
+    else:
+        print(
+            f"[!]\t Changing Transaction {req.transactionID} state to 'Waiting'")
+        req.changeTransactionState(W)
+        if not op in req.blockedOperation:
+            req.addBlockedOperation(op)
+        if not req in waitingTransactionItems:
+            waitingTransactionItems.append(req)
 
 
 def handleUnlock(transNumber: int):
@@ -179,7 +199,7 @@ def handleUnlock(transNumber: int):
 def handleResumeWaiting():
     print("[?]\t Checking for any waiting transaction that can be resumed after freeing item...")
     if len(waitingTransactionItems) == 0:
-        print("[!]\t No waiting transaction found.")
+        print("[!]\t No waiting transaction found")
         return
     for waitingTrans in waitingTransactionItems:
         tempBlockedOp = copy.deepcopy(waitingTrans.blockedOperation)
