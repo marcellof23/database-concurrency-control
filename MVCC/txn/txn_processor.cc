@@ -458,6 +458,7 @@ void TxnProcessor::MVCCExecuteTxn(Txn *txn)
   completed_txns_.Push(txn);
 
   MVCCLockWriteKeys(txn);
+
   // Check to commit or restart.
   if (MVCCCheckWrites(txn))
   {
