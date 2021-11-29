@@ -1,0 +1,12 @@
+T5 read X
+T2 read Y
+T1 read Y
+T3 write Y
+T3 write Z
+T5 read Z
+T2 read Z
+T1 read X
+T4 read W
+T3 write W
+T5 write Y
+T5 write Z
