@@ -5,7 +5,7 @@ Simulation of protocols used in Database Management Systems in order to control 
 
 In order to run the simulation for the Multiversion Timestamps Ordering Protocol (MVCC) you can execute the following command in a terminal from within this repository:
 
-```python mvcc_driver.py log.txt ```
+```python3 mvcc_driver.py log.txt ```
 
 The `log.txt` file should list all the operations that you want to simulate in the following order and in separate lines:
 
